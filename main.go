@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"github.com/jszwec/csvutil"
 )
@@ -31,13 +30,7 @@ type User struct {
 	Age  int
 }
 
-func main() {
-	file, err := os.Open("./demo.csv")
-    if err != nil {
-        panic(err)
-    }
-    defer file.Close()
-
+func userTest() {
     csvData, err := ioutil.ReadFile("./demo.csv")
     if err != nil {
         panic(err)
@@ -47,21 +40,77 @@ func main() {
         panic(err)
     }
 
-	if err := Validate(users, checkName, checkAge); err != nil {
+	if err := Validate(users, checkUserName, checkUserAge); err != nil {
 		fmt.Println(err)
 	}
 }
 
-func checkName(user User) error {
+func checkUserName(user User) error {
 	if user.Name == "" {
 		return fmt.Errorf("name must not be empty")
 	}
 	return nil
 }
 
-func checkAge(user User) error {
+func checkUserAge(user User) error {
 	if user.Age > 18 {
 		return fmt.Errorf("age must be less than 18")
 	}
 	return nil
+}
+
+type ItemType string
+
+const (
+    Food  ItemType = "food"
+    Drink ItemType = "drink"
+)
+
+type Item struct {
+	Name string
+	Price int
+	Type ItemType
+}
+
+func itemTest() {
+    csvData, err := ioutil.ReadFile("./demo1.csv")
+    if err != nil {
+        panic(err)
+    }
+    var items []Item
+    if err := csvutil.Unmarshal(csvData, &items); err != nil {
+        panic(err)
+    }
+
+	if err := Validate(items, checkItemName, checkItemPrice, checkItemType); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func checkItemName(item Item) error {
+	if item.Name == "" {
+		return fmt.Errorf("name must not be empty")
+	}
+	return nil
+}
+
+func checkItemPrice(item Item) error {
+	if item.Price < 0 {
+		return fmt.Errorf("price must be greater than 0")
+	}
+	return nil
+}
+
+func checkItemType(item Item) error {
+	if item.Type != Food && item.Type != Drink {
+		return fmt.Errorf("type must be food or drink")
+	}
+	return nil
+}
+
+func main() {
+	fmt.Println("User Test")
+	userTest()
+	fmt.Println("Item Test")
+	itemTest()
 }
